@@ -80,15 +80,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBarTitle: const Text('Mi Perfil'),
       drawer: const AppNavigationDrawer(currentRoute: '/profile'),
       body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 540),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 600;
+            final horizontalPadding = isMobile ? 8.0 : 16.0;
+            final maxWidth = isMobile ? double.infinity : 480.0;
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
             child: Card(
-              elevation: 6,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Padding(
-                padding: const EdgeInsets.all(28),
+                padding: const EdgeInsets.all(16),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -97,20 +102,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Row(
                         children: [
                           CircleAvatar(
-                            radius: 32,
+                            radius: isMobile ? 24 : 28,
                             backgroundColor: const Color(0xFF1A73E8),
                             child: Text(
                               (user?.name.isNotEmpty == true ? user!.name[0] : 'U').toUpperCase(),
-                              style: const TextStyle(fontSize: 26, color: Colors.white, fontWeight: FontWeight.bold),
+                              style: TextStyle(fontSize: isMobile ? 18 : 22, color: Colors.white, fontWeight: FontWeight.bold),
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          SizedBox(width: isMobile ? 10 : 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(user?.name ?? '', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                                Text(user?.email ?? '', style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                                Text(user?.name ?? '', style: TextStyle(fontSize: isMobile ? 16 : 18, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                Text(user?.email ?? '', style: TextStyle(color: Colors.grey, fontSize: isMobile ? 11 : 13), maxLines: 1, overflow: TextOverflow.ellipsis),
                                 const SizedBox(height: 4),
                                 Chip(
                                   label: Text(user?.role == 'admin' ? 'ADMINISTRADOR' : 'CLIENTE'),
@@ -121,24 +126,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ],
                       ),
-                      const Divider(height: 32),
+                      const Divider(height: 24),
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(labelText: 'Nombre completo', prefixIcon: Icon(Icons.person)),
+                        decoration: InputDecoration(labelText: 'Nombre completo', prefixIcon: Icon(Icons.person, size: isMobile ? 18 : 20)),
                         validator: (val) => (val == null || val.isEmpty) ? 'El nombre es obligatorio' : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _companyController,
-                        decoration: const InputDecoration(labelText: 'Empresa / Entidad', prefixIcon: Icon(Icons.business)),
+                        decoration: InputDecoration(labelText: 'Empresa / Entidad', prefixIcon: Icon(Icons.business, size: isMobile ? 18 : 20)),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Nueva contraseña (deja en blanco para mantener)',
-                          prefixIcon: Icon(Icons.lock_outline),
+                        decoration: InputDecoration(
+                          labelText: 'Nueva contraseña (opcional)',
+                          prefixIcon: Icon(Icons.lock_outline, size: isMobile ? 18 : 20),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -173,7 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         child: _saving
                             ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                            : const Text('Guardar cambios de perfil', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            : Text('Guardar cambios', style: TextStyle(fontSize: isMobile ? 14 : 15, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
@@ -181,8 +186,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
+      },
+    ),
+  ),
+);
   }
 }

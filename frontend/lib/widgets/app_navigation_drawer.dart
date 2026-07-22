@@ -15,7 +15,11 @@ class AppNavigationDrawer extends StatelessWidget {
       Navigator.pop(context);
     }
     if (ModalRoute.of(context)?.settings.name != routeName) {
-      Navigator.pushReplacementNamed(context, routeName);
+      if (routeName == '/prediction-form') {
+        Navigator.pushNamed(context, routeName);
+      } else {
+        Navigator.pushReplacementNamed(context, routeName);
+      }
     }
   }
 
@@ -34,7 +38,7 @@ class AppNavigationDrawer extends StatelessWidget {
             // User Header
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(20, 48, 20, 24),
+              padding: const EdgeInsets.fromLTRB(16, 40, 16, 20),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
@@ -68,7 +72,7 @@ class AppNavigationDrawer extends StatelessWidget {
                               user?.name ?? 'Usuario',
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 17,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                               maxLines: 1,
@@ -79,7 +83,7 @@ class AppNavigationDrawer extends StatelessWidget {
                               user?.email ?? '',
                               style: const TextStyle(
                                 color: Colors.white70,
-                                fontSize: 13,
+                                fontSize: 12,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,

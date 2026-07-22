@@ -12,14 +12,16 @@ class ResponsiveScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     return Scaffold(
-      appBar: AppBar(title: appBarTitle),
+      appBar: AppBar(
+        title: appBarTitle,
+      ),
       drawer: width < 900 ? drawer : null,
       body: SafeArea(
         child: Row(
           children: [
             if (width >= 900 && drawer != null)
               Container(
-                width: 280,
+                width: 260,
                 decoration: BoxDecoration(
                   border: Border(right: BorderSide(color: Colors.grey.shade300, width: 1)),
                 ),

@@ -47,8 +47,7 @@ class _PredictionFormScreenState extends State<PredictionFormScreen> {
     );
 
     if (response.statusCode == 201) {
-      if (!mounted) return;
-      Navigator.pop(context);
+      _goBack();
     } else {
       if (!mounted) return;
       setState(() {
@@ -62,18 +61,39 @@ class _PredictionFormScreenState extends State<PredictionFormScreen> {
     });
   }
 
+  void _goBack() {
+    if (!mounted) return;
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      final isAdmin = auth.user?.role == 'admin';
+      Navigator.pushReplacementNamed(context, isAdmin ? '/admin-dashboard' : '/client-home');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Nueva predicción')),
+      appBar: AppBar(
+        title: const Text('Nueva predicción'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _goBack,
+        ),
+      ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            elevation: 10,
-            child: Padding(
-              padding: const EdgeInsets.all(20),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 600;
+            final padding = isMobile ? 12.0 : 20.0;
+            return SingleChildScrollView(
+              padding: EdgeInsets.all(padding),
+              child: Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(isMobile ? 16 : 20)),
+                elevation: isMobile ? 6 : 10,
+                child: Padding(
+                  padding: EdgeInsets.all(padding),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -81,21 +101,21 @@ class _PredictionFormScreenState extends State<PredictionFormScreen> {
                   children: [
                     TextFormField(
                       controller: _titleController,
-                      decoration: const InputDecoration(labelText: 'Título del activo/predicción'),
+                      decoration: InputDecoration(labelText: 'Título del activo/predicción', labelStyle: TextStyle(fontSize: isMobile ? 14 : 16)),
                       validator: (value) => (value == null || value.isEmpty) ? 'Título es obligatorio' : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _descriptionController,
-                      decoration: const InputDecoration(labelText: 'Descripción del análisis'),
-                      minLines: 3,
-                      maxLines: 5,
+                      decoration: InputDecoration(labelText: 'Descripción del análisis', labelStyle: TextStyle(fontSize: isMobile ? 14 : 16)),
+                      minLines: isMobile ? 2 : 3,
+                      maxLines: isMobile ? 4 : 5,
                       validator: (value) => (value == null || value.isEmpty) ? 'Descripción es obligatoria' : null,
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       initialValue: _category,
-                      decoration: const InputDecoration(labelText: 'Categoría de activo'),
+                      decoration: InputDecoration(labelText: 'Categoría de activo', labelStyle: TextStyle(fontSize: isMobile ? 14 : 16)),
                       items: const [
                         DropdownMenuItem(value: 'Acciones', child: Text('Acciones')),
                         DropdownMenuItem(value: 'Cryptos', child: Text('Criptomonedas')),
@@ -160,7 +180,7 @@ class _PredictionFormScreenState extends State<PredictionFormScreen> {
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       initialValue: _trend,
-                      decoration: const InputDecoration(labelText: 'Tendencia'),
+                      decoration: InputDecoration(labelText: 'Tendencia', labelStyle: TextStyle(fontSize: isMobile ? 14 : 16)),
                       items: const [
                         DropdownMenuItem(value: 'alcista', child: Text('Alcista 📈')),
                         DropdownMenuItem(value: 'neutral', child: Text('Neutral ➡️')),
@@ -184,8 +204,10 @@ class _PredictionFormScreenState extends State<PredictionFormScreen> {
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
+      },
+    ),
+  ),
+);
   }
 }

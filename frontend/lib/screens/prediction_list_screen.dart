@@ -103,9 +103,13 @@ class _PredictionListScreenState extends State<PredictionListScreen> {
         label: const Text('Nueva'),
         backgroundColor: const Color(0xFF1A73E8),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 600;
+          final horizontalPadding = isMobile ? 8.0 : 16.0;
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Search & Filter Header
@@ -114,10 +118,10 @@ class _PredictionListScreenState extends State<PredictionListScreen> {
                 Expanded(
                   child: TextField(
                     decoration: InputDecoration(
-                      hintText: 'Buscar activo o análisis...',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      hintText: 'Buscar...',
+                      prefixIcon: Icon(Icons.search, size: isMobile ? 18 : 20),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(isMobile ? 8 : 10)),
+                      contentPadding: EdgeInsets.symmetric(horizontal: isMobile ? 10 : 12, vertical: isMobile ? 6 : 8),
                     ),
                     onChanged: (val) => setState(() => _searchQuery = val),
                   ),
@@ -136,13 +140,13 @@ class _PredictionListScreenState extends State<PredictionListScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildFilterChip('Todas', 'all'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Pendientes', 'pending'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Aprobadas', 'approved'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Completadas', 'completed'),
+                  _buildFilterChip('Todas', 'all', isMobile),
+                  SizedBox(width: isMobile ? 4 : 6),
+                  _buildFilterChip('Pendientes', 'pending', isMobile),
+                  SizedBox(width: isMobile ? 4 : 6),
+                  _buildFilterChip('Aprobadas', 'approved', isMobile),
+                  SizedBox(width: isMobile ? 4 : 6),
+                  _buildFilterChip('Completadas', 'completed', isMobile),
                 ],
               ),
             ),
@@ -176,20 +180,22 @@ class _PredictionListScreenState extends State<PredictionListScreen> {
                               itemCount: _filteredPredictions.length,
                               itemBuilder: (context, index) {
                                 final p = _filteredPredictions[index];
-                                return _buildPredictionCard(p, isAdmin);
+                                return _buildPredictionCard(p, isAdmin, isMobile);
                               },
                             ),
             ),
           ],
         ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildFilterChip(String label, String value) {
+  Widget _buildFilterChip(String label, String value, bool isMobile) {
     final isSelected = _selectedStatusFilter == value;
     return ChoiceChip(
-      label: Text(label),
+      label: Text(label, style: TextStyle(fontSize: isMobile ? 12 : 14)),
       selected: isSelected,
       selectedColor: const Color(0xFF1A73E8),
       labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
@@ -201,7 +207,7 @@ class _PredictionListScreenState extends State<PredictionListScreen> {
     );
   }
 
-  Widget _buildPredictionCard(PredictionModel p, bool isAdmin) {
+  Widget _buildPredictionCard(PredictionModel p, bool isAdmin, bool isMobile) {
     final isUp = p.trend == 'alcista';
     final isDown = p.trend == 'bajista';
     final trendColor = isUp ? Colors.green : (isDown ? Colors.red : Colors.orange);
@@ -221,56 +227,56 @@ class _PredictionListScreenState extends State<PredictionListScreen> {
     }
 
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      margin: const EdgeInsets.only(bottom: 14),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(isMobile ? 10 : 12)),
+      margin: EdgeInsets.only(bottom: isMobile ? 6 : 10),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(isMobile ? 10 : 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(isMobile ? 4 : 6),
                   decoration: BoxDecoration(
                     color: trendColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(isMobile ? 6 : 8),
                   ),
-                  child: Icon(trendIcon, color: trendColor, size: 24),
+                  child: Icon(trendIcon, color: trendColor, size: isMobile ? 16 : 20),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: isMobile ? 8 : 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(p.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                      Flexible(child: Text(p.title, style: TextStyle(fontSize: isMobile ? 13 : 15, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis)),
                       if (p.createdBy.isNotEmpty)
-                        Text('Por ${p.createdBy} · ${p.category}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text('Por ${p.createdBy} · ${p.category}', style: TextStyle(color: Colors.grey, fontSize: isMobile ? 10 : 11)),
                     ],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 10, vertical: isMobile ? 2 : 4),
                   decoration: BoxDecoration(
                     color: statusBg,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
                   ),
-                  child: Text(statusLabel, style: TextStyle(color: statusText, fontSize: 11, fontWeight: FontWeight.bold)),
+                  child: Text(statusLabel, style: TextStyle(color: statusText, fontSize: isMobile ? 9 : 11, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            Text(p.description, style: const TextStyle(color: Colors.black87, fontSize: 14)),
+            Text(p.description, style: TextStyle(color: Colors.black87, fontSize: isMobile ? 11 : 13), maxLines: 2, overflow: TextOverflow.ellipsis),
             const SizedBox(height: 12),
             Wrap(
-              spacing: 16,
-              runSpacing: 8,
+              spacing: isMobile ? 12 : 16,
+              runSpacing: isMobile ? 6 : 8,
               children: [
-                _buildMetric('Monto', '\$${p.amount.toStringAsFixed(0)}'),
-                _buildMetric('Probabilidad', '${p.probability.toStringAsFixed(0)}%'),
-                if (p.targetReturn > 0) _buildMetric('Rendimiento Est.', '+${p.targetReturn}%', color: Colors.green.shade700),
-                _buildMetric('Riesgo', p.riskLevel),
+                _buildMetric('Monto', '\$${p.amount.toStringAsFixed(0)}', isMobile),
+                _buildMetric('Probabilidad', '${p.probability.toStringAsFixed(0)}%', isMobile),
+                if (p.targetReturn > 0) _buildMetric('Rend.', '+${p.targetReturn}%', isMobile, color: Colors.green.shade700),
+                _buildMetric('Riesgo', p.riskLevel, isMobile),
               ],
             ),
             if (isAdmin) ...[
@@ -304,13 +310,13 @@ class _PredictionListScreenState extends State<PredictionListScreen> {
     );
   }
 
-  Widget _buildMetric(String label, String value, {Color? color}) {
+  Widget _buildMetric(String label, String value, bool isMobile, {Color? color}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+        Text(label, style: TextStyle(color: Colors.grey, fontSize: isMobile ? 9 : 11)),
         const SizedBox(height: 2),
-        Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: color ?? Colors.black87)),
+        Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 12 : 14, color: color ?? Colors.black87)),
       ],
     );
   }

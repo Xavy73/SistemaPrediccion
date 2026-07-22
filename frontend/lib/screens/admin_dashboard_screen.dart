@@ -15,6 +15,8 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  int _selectedTab = 0;
+
   @override
   void initState() {
     super.initState();
@@ -42,8 +44,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 900;
+          final isMobile = constraints.maxWidth < 600;
+          final horizontalPadding = isMobile ? 8.0 : 16.0;
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
             child: dashboard.isLoading
                 ? const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 80), child: CircularProgressIndicator()))
                 : dashboard.stats == null
@@ -94,7 +98,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           // Header Banner
                           Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.all(22),
+                            padding: EdgeInsets.all(isMobile ? 12 : 16),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
@@ -110,82 +114,149 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 )
                               ],
                             ),
-                            child: const Column(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Panel de Análisis Financiero', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-                                SizedBox(height: 6),
-                                Text('Monitoreo gráfico de predicciones, usuarios y métricas de riesgo en tiempo real.', style: TextStyle(fontSize: 14, color: Colors.white70)),
+                                Text('Panel de Administración', style: TextStyle(fontSize: isMobile ? 15 : 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                                const SizedBox(height: 4),
+                                Text('Monitoreo de métricas, tendencias y minería de datos', style: TextStyle(fontSize: isMobile ? 11 : 13, color: Colors.white70)),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 24),
-                          
-                          // Key Metrics Grid
-                          GridView.count(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            crossAxisCount: isWide ? 4 : 2,
-                            crossAxisSpacing: 14,
-                            mainAxisSpacing: 14,
-                            childAspectRatio: isWide ? 1.4 : 1.3,
-                            children: [
-                              _buildStatCard('Total Usuarios', dashboard.stats!.totalUsers.toString(), Icons.people, Colors.indigo),
-                              _buildStatCard('Pendientes', dashboard.stats!.pending.toString(), Icons.hourglass_empty_rounded, Colors.amber),
-                              _buildStatCard('Aprobadas', dashboard.stats!.approved.toString(), Icons.check_circle_outline, Colors.blue),
-                              _buildStatCard('Completadas', dashboard.stats!.completed.toString(), Icons.task_alt, Colors.green),
-                            ],
+                          const SizedBox(height: 16),
+
+                          // Section Selector Tabs
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(child: _buildSectionTab(0, 'Métricas', Icons.grid_view_rounded, isMobile)),
+                                const SizedBox(width: 4),
+                                Expanded(child: _buildSectionTab(1, 'Gráficas', Icons.bar_chart_rounded, isMobile)),
+                                const SizedBox(width: 4),
+                                Expanded(child: _buildSectionTab(2, 'Analítica', Icons.psychology_rounded, isMobile)),
+                              ],
+                            ),
                           ),
-                          const SizedBox(height: 28),
+                          const SizedBox(height: 20),
 
-                          const SizedBox(height: 28),
-
-                          const Text('Análisis Gráfico de Operaciones', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 16),
-
-                          // Visual Charts Row
-                          if (isWide)
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          // Tab 0: Métricas Clave y Flujo
+                          if (_selectedTab == 0) ...[
+                            Text('Métricas de Rendimiento', style: TextStyle(fontSize: isMobile ? 14 : 16, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 12),
+                            GridView.count(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              crossAxisCount: isMobile ? 2 : (isWide ? 4 : 2),
+                              crossAxisSpacing: isMobile ? 8 : 10,
+                              mainAxisSpacing: isMobile ? 8 : 10,
+                              childAspectRatio: isMobile ? 1.3 : (isWide ? 1.5 : 1.4),
                               children: [
-                                Expanded(child: _buildProbabilityChartCard(dashboard.stats!)),
-                                const SizedBox(width: 16),
-                                Expanded(child: _buildTrendChartCard(dashboard.stats!)),
+                                _buildStatCard('Total Usuarios', dashboard.stats!.totalUsers.toString(), Icons.people, Colors.indigo),
+                                _buildStatCard('Pendientes', dashboard.stats!.pending.toString(), Icons.hourglass_empty_rounded, Colors.amber),
+                                _buildStatCard('Aprobadas', dashboard.stats!.approved.toString(), Icons.check_circle_outline, Colors.blue),
+                                _buildStatCard('Completadas', dashboard.stats!.completed.toString(), Icons.task_alt, Colors.green),
                               ],
-                            )
-                          else ...[
-                            _buildProbabilityChartCard(dashboard.stats!),
+                            ),
                             const SizedBox(height: 16),
-                            _buildTrendChartCard(dashboard.stats!),
+                            _buildStatusDistributionChartCard(dashboard.stats!),
                           ],
-                          const SizedBox(height: 16),
-                          _buildStatusDistributionChartCard(dashboard.stats!),
 
-                          const SizedBox(height: 32),
-                          const Text('Analítica Avanzada & Minería de Datos', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 16),
+                          // Tab 1: Análisis Gráfico y Tendencias
+                          if (_selectedTab == 1) ...[
+                            Text('Análisis Gráfico y Tendencias', style: TextStyle(fontSize: isMobile ? 14 : 16, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 12),
+                            if (isWide)
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(child: _buildProbabilityChartCard(dashboard.stats!)),
+                                  const SizedBox(width: 16),
+                                  Expanded(child: _buildTrendChartCard(dashboard.stats!)),
+                                ],
+                              )
+                            else ...[
+                              _buildProbabilityChartCard(dashboard.stats!),
+                              const SizedBox(height: 16),
+                              _buildTrendChartCard(dashboard.stats!),
+                            ],
+                          ],
 
-                          // Advanced Analytics: Scatter Plot, Histogram & Data Mining
-                          if (isWide)
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(child: _buildScatterPlotCard(dashboard.stats!)),
-                                const SizedBox(width: 16),
-                                Expanded(child: _buildHistogramCard(dashboard.stats!)),
-                              ],
-                            )
-                          else ...[
-                            _buildScatterPlotCard(dashboard.stats!),
+                          // Tab 2: Analítica Avanzada y Minería
+                          if (_selectedTab == 2) ...[
+                            Text('Analítica Avanzada y Minería de Datos', style: TextStyle(fontSize: isMobile ? 14 : 16, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 12),
+                            if (isWide)
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(child: _buildScatterPlotCard(dashboard.stats!)),
+                                  const SizedBox(width: 16),
+                                  Expanded(child: _buildHistogramCard(dashboard.stats!)),
+                                ],
+                              )
+                            else ...[
+                              _buildScatterPlotCard(dashboard.stats!),
+                              const SizedBox(height: 16),
+                              _buildHistogramCard(dashboard.stats!),
+                            ],
                             const SizedBox(height: 16),
-                            _buildHistogramCard(dashboard.stats!),
+                            _buildDataMiningCard(dashboard.stats!),
                           ],
-                          const SizedBox(height: 16),
-                          _buildDataMiningCard(dashboard.stats!),
                         ],
                       ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildSectionTab(int index, String label, IconData icon, bool isMobile) {
+    final isSelected = _selectedTab == index;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          if (_selectedTab != index) {
+            setState(() => _selectedTab = index);
+          }
+        },
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: EdgeInsets.symmetric(vertical: isMobile ? 10 : 12, horizontal: isMobile ? 4 : 8),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF1A73E8) : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: isSelected
+                ? [BoxShadow(color: const Color(0xFF1A73E8).withValues(alpha: 0.3), blurRadius: 6, offset: const Offset(0, 2))]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: isMobile ? 16 : 18, color: isSelected ? Colors.white : Colors.black54),
+              SizedBox(width: isMobile ? 4 : 6),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black87,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                    fontSize: isMobile ? 12 : 14,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -195,25 +266,30 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       elevation: 4,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title, style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.bold)),
+                Expanded(child: Text(title, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis)),
                 CircleAvatar(
-                  radius: 16,
+                  radius: 13,
                   backgroundColor: color.withValues(alpha: 0.12),
-                  child: Icon(icon, size: 18, color: color),
+                  child: Icon(icon, size: 15, color: color),
                 ),
               ],
             ),
-            const Spacer(),
-            Text(value, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
-            const Text('Actualizado en tiempo real', style: TextStyle(color: Colors.grey, fontSize: 11)),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(value, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(height: 2),
+            const Text('Actualizado en tiempo real', style: TextStyle(color: Colors.grey, fontSize: 10), maxLines: 1, overflow: TextOverflow.ellipsis),
           ],
         ),
       ),
@@ -224,22 +300,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final total = stats.totalPredictions > 0 ? stats.totalPredictions : 1;
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
+      margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(Icons.bar_chart_rounded, color: Color(0xFF1A73E8)),
-                SizedBox(width: 10),
-                Text('Distribución de Probabilidad', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                Icon(Icons.bar_chart_rounded, color: Color(0xFF1A73E8), size: 18),
+                SizedBox(width: 8),
+                Flexible(child: Text('Distribución Probabilidad', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
               ],
             ),
             const SizedBox(height: 6),
-            const Text('Nivel de certidumbre proyectada en los análisis', style: TextStyle(color: Colors.grey, fontSize: 12)),
+            const Text('Nivel de certidumbre en análisis', style: TextStyle(color: Colors.grey, fontSize: 10)),
             const SizedBox(height: 20),
             if (stats.probabilities.isEmpty)
               const Center(child: Text('No hay datos de probabilidad registrados.'))
@@ -266,7 +343,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(p.range, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            Flexible(child: Text(p.range, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
                             Text('${p.count} (${pct.toStringAsFixed(1)}%)', style: TextStyle(color: barColor, fontWeight: FontWeight.bold, fontSize: 13)),
                           ],
                         ),
@@ -295,22 +372,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final total = stats.totalPredictions > 0 ? stats.totalPredictions : 1;
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
+      margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(Icons.pie_chart_rounded, color: Color(0xFF1A73E8)),
-                SizedBox(width: 10),
-                Text('Tendencias de Mercado', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                Icon(Icons.pie_chart_rounded, color: Color(0xFF1A73E8), size: 18),
+                SizedBox(width: 8),
+                Flexible(child: Text('Tendencias Mercado', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
               ],
             ),
             const SizedBox(height: 6),
-            const Text('Sentimiento actual proyectado en activos', style: TextStyle(color: Colors.grey, fontSize: 12)),
+            const Text('Sentimiento actual en activos', style: TextStyle(color: Colors.grey, fontSize: 10)),
             const SizedBox(height: 20),
             
             // Multi-segment Breakdown Bar
@@ -372,6 +450,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             Text(
                               t.trend.toUpperCase(),
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 4),
                             ClipRRect(
@@ -386,8 +466,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 14),
-                      Text('${t.count} (${pct.toStringAsFixed(0)}%)', style: TextStyle(fontWeight: FontWeight.bold, color: tColor, fontSize: 13)),
+                      const SizedBox(width: 10),
+                      Text('${t.count} (${pct.toStringAsFixed(0)}%)', style: TextStyle(fontWeight: FontWeight.bold, color: tColor, fontSize: 12)),
                     ],
                   ),
                 );
@@ -406,22 +486,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final completedPct = (stats.completed / total * 100).clamp(0, 100).toDouble();
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
+      margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(Icons.query_stats_rounded, color: Color(0xFF1A73E8)),
-                SizedBox(width: 10),
-                Text('Flujo Operativo de Predicciones', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                Icon(Icons.query_stats_rounded, color: Color(0xFF1A73E8), size: 18),
+                SizedBox(width: 8),
+                Flexible(child: Text('Flujo Predicciones', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
               ],
             ),
             const SizedBox(height: 6),
-            const Text('Progreso y aprobación de análisis financieros registrados', style: TextStyle(color: Colors.grey, fontSize: 12)),
+            const Text('Progreso y aprobación de análisis', style: TextStyle(color: Colors.grey, fontSize: 10)),
             const SizedBox(height: 20),
             _buildStatusItem('Pendientes de revisión', stats.pending, pendingPct, Colors.amber),
             const SizedBox(height: 12),
@@ -441,7 +522,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            Flexible(child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
             Text('$count ops (${pct.toStringAsFixed(1)}%)', style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13)),
           ],
         ),
@@ -461,41 +542,51 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildScatterPlotCard(DashboardStatsModel stats) {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
+      margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(Icons.bubble_chart_rounded, color: Color(0xFF1A73E8)),
-                SizedBox(width: 10),
-                Text('Gráfica de Dispersión (Riesgo / Retorno)', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                Icon(Icons.bubble_chart_rounded, color: Color(0xFF1A73E8), size: 18),
+                SizedBox(width: 8),
+                Flexible(child: Text('Dispersión (Riesgo/Retorno)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
               ],
             ),
             const SizedBox(height: 6),
-            const Text('Probabilidad de éxito (%) vs. Rendimiento estimado (%)', style: TextStyle(color: Colors.grey, fontSize: 12)),
+            const Text('Probabilidad vs Rendimiento', style: TextStyle(color: Colors.grey, fontSize: 10)),
             const SizedBox(height: 16),
-            SizedBox(
-              height: 220,
-              width: double.infinity,
-              child: CustomPaint(
-                painter: ScatterPlotPainter(points: stats.scatterData),
+            if (stats.scatterData.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 30),
+                child: Center(child: Text('No hay datos de dispersión registrados.', style: TextStyle(color: Colors.grey, fontSize: 12))),
+              )
+            else ...[
+              ClipRect(
+                child: SizedBox(
+                  height: 190,
+                  width: double.infinity,
+                  child: CustomPaint(
+                    painter: ScatterPlotPainter(points: stats.scatterData),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 6,
-              children: [
-                _buildLegendItem('Acciones', Colors.blue),
-                _buildLegendItem('Cryptos', Colors.orange),
-                _buildLegendItem('Forex', Colors.green),
-                _buildLegendItem('Commodities', Colors.purple),
-              ],
-            ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 12,
+                runSpacing: 6,
+                children: [
+                  _buildLegendItem('Acciones', Colors.blue),
+                  _buildLegendItem('Cryptos', Colors.orange),
+                  _buildLegendItem('Forex', Colors.green),
+                  _buildLegendItem('Commodities', Colors.purple),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -506,54 +597,66 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final maxBinCount = stats.histogramBins.fold<int>(1, (max, b) => b.count > max ? b.count : max);
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
+      margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(Icons.equalizer_rounded, color: Color(0xFF1A73E8)),
-                SizedBox(width: 10),
-                Text('Histograma de Distribución', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                Icon(Icons.equalizer_rounded, color: Color(0xFF1A73E8), size: 18),
+                SizedBox(width: 8),
+                Flexible(child: Text('Histograma Distribución', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
               ],
             ),
             const SizedBox(height: 6),
-            const Text('Frecuencia de volumen agrupada por intervalos de certeza', style: TextStyle(color: Colors.grey, fontSize: 12)),
+            const Text('Frecuencia por intervalos', style: TextStyle(color: Colors.grey, fontSize: 10)),
             const SizedBox(height: 20),
-            SizedBox(
-              height: 180,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: stats.histogramBins.map((bin) {
-                  final heightFactor = (bin.count / maxBinCount).clamp(0.08, 1.0);
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text('${bin.count}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                      const SizedBox(height: 4),
-                      Container(
-                        width: 32,
-                        height: 120 * heightFactor,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
+            if (stats.histogramBins.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 30),
+                child: Center(child: Text('No hay datos de histograma registrados.', style: TextStyle(color: Colors.grey, fontSize: 12))),
+              )
+            else
+              SizedBox(
+                height: 180,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: stats.histogramBins.map((bin) {
+                      final heightFactor = (bin.count / maxBinCount).clamp(0.08, 1.0);
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text('${bin.count}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            const SizedBox(height: 4),
+                            Container(
+                              width: 32,
+                              height: 120 * heightFactor,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(bin.range, style: const TextStyle(fontSize: 10, color: Colors.black87, fontWeight: FontWeight.w500)),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(bin.range, style: const TextStyle(fontSize: 10, color: Colors.black87, fontWeight: FontWeight.w500)),
-                    ],
-                  );
-                }).toList(),
+                      );
+                    }).toList(),
+                  ),
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -567,10 +670,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final clusters = mining?.clusters ?? [];
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
+      margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -579,9 +683,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.psychology_rounded, color: Color(0xFF1A73E8)),
-                    SizedBox(width: 10),
-                    Text('Minería de Datos & Patrones Predictivos', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                    Icon(Icons.psychology_rounded, color: Color(0xFF1A73E8), size: 18),
+                    SizedBox(width: 8),
+                    Flexible(child: Text('Minería de Datos', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
                   ],
                 ),
                 Container(
@@ -599,10 +703,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ],
             ),
             const SizedBox(height: 6),
-            const Text('Análisis automático de clusters, retorno medio e índice global de confiabilidad', style: TextStyle(color: Colors.grey, fontSize: 12)),
+            const Text('Análisis de clusters y confiabilidad', style: TextStyle(color: Colors.grey, fontSize: 10)),
             const SizedBox(height: 20),
             
-            const Text('Rendimiento Medio Proyectado por Categoría:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            const Text('Rendimiento por Categoría:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
             const SizedBox(height: 12),
             Column(
               children: categories.map((cat) {
@@ -611,8 +715,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   child: Row(
                     children: [
                       SizedBox(
-                        width: 100,
-                        child: Text(cat.category, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                        width: 80,
+                        child: Text(cat.category, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                       ),
                       Expanded(
                         child: ClipRRect(
@@ -625,15 +729,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Text('+${cat.avgReturn}% ret. (${cat.avgProbability}% prob)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.green)),
+                      const SizedBox(width: 10),
+                      Text('+${cat.avgReturn.toStringAsFixed(0)}% ret. (${cat.avgProbability.toStringAsFixed(0)}% prob)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.green), maxLines: 1, overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 );
               }).toList(),
             ),
             const Divider(height: 24),
-            const Text('Clusters Identificados (Riesgo / Desempeño):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            const Text('Clusters (Riesgo/Desempeño):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
             const SizedBox(height: 10),
             Wrap(
               spacing: 10,
@@ -641,7 +745,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               children: clusters.map((cls) {
                 return Chip(
                   avatar: const Icon(Icons.hub, size: 16, color: Color(0xFF1A73E8)),
-                  label: Text('${cls.clusterName}: ${cls.count} activos (+${cls.avgReturn}%)'),
+                  label: Text('${cls.clusterName}: ${cls.count} activos (+${cls.avgReturn.toStringAsFixed(0)}%)'),
                   backgroundColor: const Color(0xFFF1F5F9),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 );
@@ -679,31 +783,38 @@ class ScatterPlotPainter extends CustomPainter {
 
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
+    final leftMargin = 28.0;
+    final bottomMargin = 18.0;
+    final chartWidth = size.width - leftMargin - 12.0;
+    final chartHeight = size.height - bottomMargin - 10.0;
+
+    if (chartWidth <= 0 || chartHeight <= 0) return;
+
     // Draw grid lines
     for (int i = 0; i <= 4; i++) {
-      final y = size.height * (i / 4);
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+      final y = chartHeight * (i / 4) + 10.0;
+      canvas.drawLine(Offset(leftMargin, y), Offset(size.width - 12.0, y), gridPaint);
       
       final label = '${((4 - i) * 10)}%';
       textPainter.text = TextSpan(text: label, style: TextStyle(color: Colors.grey.shade600, fontSize: 9));
       textPainter.layout();
-      textPainter.paint(canvas, Offset(2, y - 10));
+      textPainter.paint(canvas, Offset(2, y - 6));
     }
 
     for (int i = 0; i <= 4; i++) {
-      final x = size.width * (i / 4);
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
+      final x = leftMargin + chartWidth * (i / 4);
+      canvas.drawLine(Offset(x, 10.0), Offset(x, chartHeight + 10.0), gridPaint);
 
       final label = '${(i * 25)}%';
       textPainter.text = TextSpan(text: label, style: TextStyle(color: Colors.grey.shade600, fontSize: 9));
       textPainter.layout();
-      textPainter.paint(canvas, Offset(x + 2, size.height - 12));
+      textPainter.paint(canvas, Offset(x - 8, chartHeight + 12.0));
     }
 
     // Draw Scatter points
     for (final p in points) {
-      final x = (p.probability / 100.0).clamp(0.05, 0.95) * size.width;
-      final y = size.height - ((p.targetReturn / 40.0).clamp(0.05, 0.95) * size.height);
+      final x = leftMargin + (p.probability / 100.0).clamp(0.02, 0.98) * chartWidth;
+      final y = 10.0 + chartHeight - ((p.targetReturn / 40.0).clamp(0.02, 0.98) * chartHeight);
 
       Color color = Colors.blue;
       if (p.category.toLowerCase().contains('crypto')) {
@@ -718,13 +829,13 @@ class ScatterPlotPainter extends CustomPainter {
         ..color = color
         ..style = PaintingStyle.fill;
 
-      canvas.drawCircle(Offset(x, y), 6, dotPaint);
+      canvas.drawCircle(Offset(x, y), 5, dotPaint);
 
       final outerPaint = Paint()
         ..color = color.withValues(alpha: 0.3)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 3;
-      canvas.drawCircle(Offset(x, y), 9, outerPaint);
+        ..strokeWidth = 2.5;
+      canvas.drawCircle(Offset(x, y), 8, outerPaint);
     }
   }
 

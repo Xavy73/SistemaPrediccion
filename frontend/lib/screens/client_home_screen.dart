@@ -57,15 +57,17 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 900;
+          final isMobile = constraints.maxWidth < 600;
+          final horizontalPadding = isMobile ? 8.0 : 16.0;
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Welcome Banner & Financial Summary Card
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(isMobile ? 12 : 16),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF0F172A), Color(0xFF1E3A8A), Color(0xFF2563EB)],
@@ -87,64 +89,72 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 24,
-                                backgroundColor: Colors.white,
-                                child: Text(
-                                  (userName.isNotEmpty ? userName[0] : 'C').toUpperCase(),
-                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E3A8A)),
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('¡Hola, $userName! 👋', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-                                  const SizedBox(height: 2),
-                                  const Text('Cliente FinTech VIP', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                                ],
-                              ),
-                            ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade500.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.greenAccent),
-                            ),
-                            child: const Row(
+                          Expanded(
+                            child: Row(
                               children: [
-                                Icon(Icons.trending_up, color: Colors.greenAccent, size: 16),
-                                SizedBox(width: 6),
-                                Text('+18.4% ROI', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+                                CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: Colors.white,
+                                  child: Text(
+                                    (userName.isNotEmpty ? userName[0] : 'C').toUpperCase(),
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E3A8A)),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('¡Hola, $userName!', style: TextStyle(fontSize: isMobile ? 14 : 16, fontWeight: FontWeight.bold, color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      const SizedBox(height: 2),
+                                      Text('Cliente VIP', style: TextStyle(color: Colors.white70, fontSize: isMobile ? 10 : 11)),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
                           ),
+                          const SizedBox(width: 8),
+                          if (!isMobile)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade500.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.greenAccent),
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.trending_up, color: Colors.greenAccent, size: 12),
+                                  SizedBox(width: 3),
+                                  Text('+18%', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold, fontSize: 10)),
+                                ],
+                              ),
+                            ),
                         ],
                       ),
                       const SizedBox(height: 24),
-                      const Text('Balance Estimado Portafolio', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      Text('Balance Portafolio', style: TextStyle(color: Colors.white70, fontSize: isMobile ? 11 : 12)),
                       const SizedBox(height: 6),
-                      const Row(
+                      Row(
                         crossAxisAlignment: CrossAxisAlignment.baseline,
                         textBaseline: TextBaseline.alphabetic,
                         children: [
-                          Text('\$24,850.00', style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.white)),
-                          SizedBox(width: 8),
-                          Text('USD', style: TextStyle(fontSize: 14, color: Colors.white70, fontWeight: FontWeight.w600)),
+                          Flexible(
+                            child: Text('\$24,850', style: TextStyle(fontSize: isMobile ? 22 : 26, fontWeight: FontWeight.bold, color: Colors.white)),
+                          ),
+                          SizedBox(width: isMobile ? 4 : 6),
+                          Text('USD', style: TextStyle(fontSize: isMobile ? 11 : 13, color: Colors.white70, fontWeight: FontWeight.w600)),
                         ],
                       ),
                       const SizedBox(height: 16),
                       Wrap(
-                        spacing: 12,
-                        runSpacing: 8,
+                        spacing: 4,
+                        runSpacing: 3,
                         children: [
-                          _buildMiniBadge(Icons.analytics, '12 Operaciones Activas'),
-                          _buildMiniBadge(Icons.shield, 'Riesgo Moderado'),
-                          _buildMiniBadge(Icons.verified, 'Certidumbre 84%'),
+                          _buildMiniBadge(Icons.analytics, '12 Ops', isMobile),
+                          _buildMiniBadge(Icons.shield, 'Riesgo', isMobile),
+                          _buildMiniBadge(Icons.verified, '84%', isMobile),
                         ],
                       ),
                     ],
@@ -152,43 +162,43 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 ),
                 const SizedBox(height: 28),
 
-                const Text('Acciones Rápidas', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text('Acciones Rápidas', style: TextStyle(fontSize: isMobile ? 14 : 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
 
                 // Quick Actions Grid
                 GridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: isWide ? 4 : 2,
-                  crossAxisSpacing: 14,
-                  mainAxisSpacing: 14,
-                  childAspectRatio: isWide ? 1.25 : 1.15,
+                  crossAxisCount: isMobile ? 2 : (isWide ? 4 : 2),
+                  crossAxisSpacing: isMobile ? 8 : 10,
+                  mainAxisSpacing: isMobile ? 8 : 10,
+                  childAspectRatio: isMobile ? 1.1 : (isWide ? 1.3 : 1.2),
                   children: [
                     _buildActionCard(
                       icon: Icons.auto_graph_rounded,
                       title: 'Explorar Predicciones',
-                      subtitle: 'Ver recomendaciones y análisis',
+                      subtitle: 'Ver recomendaciones',
                       color: const Color(0xFF1A73E8),
                       onTap: () => Navigator.pushNamed(context, '/predictions'),
                     ),
                     _buildActionCard(
                       icon: Icons.add_chart_rounded,
                       title: 'Nueva Predicción',
-                      subtitle: 'Crear análisis financiero',
+                      subtitle: 'Crear análisis',
                       color: const Color(0xFF059669),
                       onTap: () => Navigator.pushNamed(context, '/prediction-form'),
                     ),
                     _buildActionCard(
                       icon: Icons.person_rounded,
                       title: 'Mi Perfil',
-                      subtitle: 'Gestionar datos y contraseña',
+                      subtitle: 'Gestionar datos',
                       color: const Color(0xFF7C3AED),
                       onTap: () => Navigator.pushNamed(context, '/profile'),
                     ),
                     _buildActionCard(
                       icon: Icons.support_agent_rounded,
-                      title: 'Soporte FinTech',
-                      subtitle: 'Asistencia y consultas',
+                      title: 'Soporte',
+                      subtitle: 'Asistencia',
                       color: const Color(0xFFEA580C),
                       onTap: () => Navigator.pushNamed(context, '/predictions'),
                     ),
@@ -200,7 +210,9 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Señales de Mercado Destacadas', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Flexible(
+                      child: Text('Señales de Mercado', style: TextStyle(fontSize: isMobile ? 14 : 16, fontWeight: FontWeight.bold)),
+                    ),
                     TextButton.icon(
                       onPressed: () => Navigator.pushNamed(context, '/predictions'),
                       icon: const Icon(Icons.arrow_forward, size: 16),
@@ -226,19 +238,19 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     );
   }
 
-  Widget _buildMiniBadge(IconData icon, String text) {
+  Widget _buildMiniBadge(IconData icon, String text, bool isMobile) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 6 : 10, vertical: isMobile ? 2 : 4),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: Colors.white),
-          const SizedBox(width: 6),
-          Text(text, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
+          Icon(icon, size: isMobile ? 12 : 14, color: Colors.white),
+          SizedBox(width: isMobile ? 4 : 6),
+          Text(text, style: TextStyle(color: Colors.white, fontSize: isMobile ? 9 : 11, fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -251,29 +263,30 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(isMobile ? 14 : 20)),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(isMobile ? 14 : 20),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(isMobile ? 10 : 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: EdgeInsets.all(isMobile ? 8 : 10),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(isMobile ? 10 : 14),
                 ),
-                child: Icon(icon, color: color, size: 24),
+                child: Icon(icon, color: color, size: isMobile ? 20 : 24),
               ),
               const Spacer(),
-              Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+              Flexible(child: Text(title, style: TextStyle(fontSize: isMobile ? 13 : 15, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis)),
               const SizedBox(height: 4),
-              Text(subtitle, style: const TextStyle(color: Colors.black54, fontSize: 11), maxLines: 2, overflow: TextOverflow.ellipsis),
+              Text(subtitle, style: TextStyle(color: Colors.black54, fontSize: isMobile ? 10 : 11), maxLines: 2, overflow: TextOverflow.ellipsis),
             ],
           ),
         ),
@@ -282,55 +295,57 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 
   Widget _buildSignalTile(PredictionModel p) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
     final isUp = p.trend.toLowerCase() == 'alcista';
     final isDown = p.trend.toLowerCase() == 'bajista';
     final color = isUp ? Colors.green : (isDown ? Colors.red : Colors.orange);
     final icon = isUp ? Icons.trending_up : (isDown ? Icons.trending_down : Icons.trending_flat);
 
     return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(isMobile ? 12 : 16)),
+      margin: EdgeInsets.only(bottom: isMobile ? 8 : 12),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        contentPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16, vertical: isMobile ? 6 : 8),
         leading: Container(
-          padding: const EdgeInsets.all(10),
+          padding: EdgeInsets.all(isMobile ? 8 : 10),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
           ),
-          child: Icon(icon, color: color, size: 22),
+          child: Icon(icon, color: color, size: isMobile ? 18 : 22),
         ),
         title: Row(
           children: [
-            Expanded(child: Text(p.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
-            Chip(
-              label: Text(p.category),
-              padding: EdgeInsets.zero,
-              labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-              backgroundColor: const Color(0xFFF1F5F9),
-            ),
+            Expanded(child: Text(p.title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 13 : 15), maxLines: 1, overflow: TextOverflow.ellipsis)),
+            if (!isMobile)
+              Chip(
+                label: Text(p.category),
+                padding: EdgeInsets.zero,
+                labelStyle: TextStyle(fontSize: isMobile ? 9 : 10, fontWeight: FontWeight.bold),
+                backgroundColor: const Color(0xFFF1F5F9),
+              ),
           ],
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text(p.description, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+            Text(p.description, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: isMobile ? 11 : 12)),
             const SizedBox(height: 6),
             Row(
               children: [
-                Text('Prob: ${p.probability.toStringAsFixed(0)}%', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                const SizedBox(width: 12),
+                Text('Prob: ${p.probability.toStringAsFixed(0)}%', style: TextStyle(fontSize: isMobile ? 10 : 11, fontWeight: FontWeight.w600)),
+                SizedBox(width: isMobile ? 8 : 12),
                 if (p.targetReturn > 0)
-                  Text('Rendimiento: +${p.targetReturn}%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.green.shade700)),
-                const SizedBox(width: 12),
-                Text('Riesgo: ${p.riskLevel}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                  Text('+${p.targetReturn}%', style: TextStyle(fontSize: isMobile ? 10 : 11, fontWeight: FontWeight.bold, color: Colors.green.shade700)),
+                SizedBox(width: isMobile ? 8 : 12),
+                Text(p.riskLevel, style: TextStyle(fontSize: isMobile ? 10 : 11, color: Colors.grey)),
               ],
             ),
           ],
         ),
-        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+        trailing: isMobile ? null : const Icon(Icons.chevron_right, color: Colors.grey),
         onTap: () => Navigator.pushNamed(context, '/predictions'),
       ),
     );

@@ -225,9 +225,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         label: const Text('Nuevo Usuario'),
         backgroundColor: const Color(0xFF1A73E8),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 600;
+          final horizontalPadding = isMobile ? 8.0 : 16.0;
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Search Bar & Filter Header
@@ -236,10 +240,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 Expanded(
                   child: TextField(
                     decoration: InputDecoration(
-                      hintText: 'Buscar por nombre, email o empresa...',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      hintText: 'Buscar...',
+                      prefixIcon: Icon(Icons.search, size: isMobile ? 18 : 20),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(isMobile ? 8 : 10)),
+                      contentPadding: EdgeInsets.symmetric(horizontal: isMobile ? 10 : 12, vertical: isMobile ? 6 : 8),
                     ),
                     onChanged: (val) => setState(() => _searchQuery = val),
                   ),
@@ -253,26 +257,29 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               ],
             ),
             const SizedBox(height: 14),
-            Row(
-              children: [
-                ChoiceChip(
-                  label: const Text('Todos'),
-                  selected: _roleFilter == 'all',
-                  onSelected: (val) => setState(() => _roleFilter = 'all'),
-                ),
-                const SizedBox(width: 8),
-                ChoiceChip(
-                  label: const Text('Clientes'),
-                  selected: _roleFilter == 'client',
-                  onSelected: (val) => setState(() => _roleFilter = 'client'),
-                ),
-                const SizedBox(width: 8),
-                ChoiceChip(
-                  label: const Text('Administradores'),
-                  selected: _roleFilter == 'admin',
-                  onSelected: (val) => setState(() => _roleFilter = 'admin'),
-                ),
-              ],
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  ChoiceChip(
+                    label: Text('Todos', style: TextStyle(fontSize: isMobile ? 12 : 14)),
+                    selected: _roleFilter == 'all',
+                    onSelected: (val) => setState(() => _roleFilter = 'all'),
+                  ),
+                  SizedBox(width: isMobile ? 4 : 6),
+                  ChoiceChip(
+                    label: Text('Clientes', style: TextStyle(fontSize: isMobile ? 12 : 14)),
+                    selected: _roleFilter == 'client',
+                    onSelected: (val) => setState(() => _roleFilter = 'client'),
+                  ),
+                  SizedBox(width: isMobile ? 4 : 6),
+                  ChoiceChip(
+                    label: Text('Admins', style: TextStyle(fontSize: isMobile ? 12 : 14)),
+                    selected: _roleFilter == 'admin',
+                    onSelected: (val) => setState(() => _roleFilter = 'admin'),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -303,38 +310,47 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                 final user = _filteredUsers[index];
                                 final companyText = (user.company?.isNotEmpty == true) ? ' · ${user.company}' : '';
                                 return Card(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                  elevation: 4,
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  elevation: 3,
                                   child: ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                     leading: CircleAvatar(
+                                      radius: 18,
                                       backgroundColor: user.role == 'admin' ? Colors.amber.shade100 : Colors.blue.shade100,
                                       child: Icon(
                                         user.role == 'admin' ? Icons.admin_panel_settings : Icons.person,
+                                        size: 18,
                                         color: user.role == 'admin' ? Colors.amber.shade900 : Colors.blue.shade900,
                                       ),
                                     ),
-                                    title: Text(user.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                    subtitle: Text('${user.email} · ${user.role.toUpperCase()}$companyText'),
-                                    trailing: Wrap(
-                                      spacing: 4,
+                                    title: Text(user.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                    subtitle: Text('${user.email} · ${user.role.toUpperCase()}$companyText', style: const TextStyle(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
                                         IconButton(
                                           icon: Icon(
                                             user.active ? Icons.check_circle : Icons.block,
                                             color: user.active ? Colors.green : Colors.red,
+                                            size: isMobile ? 18 : 22,
                                           ),
+                                          constraints: isMobile ? const BoxConstraints() : null,
+                                          padding: isMobile ? const EdgeInsets.all(4) : const EdgeInsets.all(8),
                                           tooltip: user.active ? 'Desactivar' : 'Activar',
                                           onPressed: () => _toggleUserStatus(user),
                                         ),
                                         IconButton(
-                                          icon: const Icon(Icons.edit_outlined, color: Colors.blue),
+                                          icon: Icon(Icons.edit_outlined, color: Colors.blue, size: isMobile ? 18 : 22),
+                                          constraints: isMobile ? const BoxConstraints() : null,
+                                          padding: isMobile ? const EdgeInsets.all(4) : const EdgeInsets.all(8),
                                           tooltip: 'Editar',
                                           onPressed: () => _showUserFormDialog(user),
                                         ),
                                         IconButton(
-                                          icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                          icon: Icon(Icons.delete_outline, color: Colors.redAccent, size: isMobile ? 18 : 22),
+                                          constraints: isMobile ? const BoxConstraints() : null,
+                                          padding: isMobile ? const EdgeInsets.all(4) : const EdgeInsets.all(8),
                                           tooltip: 'Eliminar',
                                           onPressed: () => _deleteUser(user),
                                         ),
@@ -347,6 +363,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             ),
           ],
         ),
+          );
+        },
       ),
     );
   }
